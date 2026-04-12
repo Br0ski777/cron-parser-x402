@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
-import { healthResponse, buildPaymentConfig } from "./shared";
+import { healthResponse, buildPaymentConfig, setupMcp } from "./shared";
 import { API_CONFIG } from "./config";
 import { registerRoutes } from "./logic";
 
@@ -11,6 +11,7 @@ app.use("*", logger());
 
 app.get("/", (c) => c.json(healthResponse(API_CONFIG.name)));
 app.get("/health", (c) => c.json({ status: "ok", timestamp: Date.now() }));
+nsetupMcp(app, API_CONFIG);
 
 
 async function setupPayments() {
