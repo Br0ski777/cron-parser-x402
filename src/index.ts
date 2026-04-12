@@ -11,7 +11,7 @@ app.use("*", logger());
 
 app.get("/", (c) => c.json(healthResponse(API_CONFIG.name)));
 app.get("/health", (c) => c.json({ status: "ok", timestamp: Date.now() }));
-nsetupMcp(app, API_CONFIG);
+setupMcp(app, API_CONFIG);
 
 
 async function setupPayments() {
