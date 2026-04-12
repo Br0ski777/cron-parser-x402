@@ -1,0 +1,21 @@
+{
+  "name": "@br0ski777/cron-parser-mcp",
+  "version": "1.0.0",
+  "type": "module",
+  "mcpName": "io.github.br0ski777/cron-parser",
+  "scripts": {
+    "dev": "bun run --hot src/index.ts",
+    "start": "bun run src/index.ts"
+  },
+  "dependencies": {
+    "@x402/core": "^2.9.0",
+    "@x402/evm": "^2.9.0",
+    "@x402/hono": "^2.9.0",
+    "@x402/extensions": "^2.9.0",
+    "hono": "^4.7.0"
+  },
+  "devDependencies": {
+    "bun-types": "latest",
+    "typescript": "^5.7.0"
+  }
+}
