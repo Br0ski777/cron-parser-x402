@@ -12,7 +12,7 @@
   "remotes": [
     {
       "type": "sse",
-      "url": "https://PLACEHOLDER.up.railway.app/mcp"
+      "url": "https://cron-parser-production-128b.up.railway.app/mcp"
     }
   ]
 }
