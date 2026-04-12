@@ -67,7 +67,89 @@ export function healthResponse(apiName: string) {
  * Implements JSON-RPC 2.0 over SSE for MCP protocol compatibility.
  * This enables Claude Desktop, Cursor, Copilot, and Smithery to connect.
  */
+/**
+ * x402 Discovery — adds /.well-known/x402 endpoint for x402scan registration.
+ * Also adds /openapi.json for OpenAPI-based discovery.
+ */
+export function setupDiscovery(app: any, config: ApiConfig) {
+  // /.well-known/x402 discovery endpoint
+  app.get("/.well-known/x402", (c: any) => {
+    const origin = new URL(c.req.url).origin;
+    return c.json({
+      version: 1,
+      resources: config.routes.map((r) => `${r.method} ${r.path}`),
+    });
+  });
+
+  // OpenAPI spec with x-payment-info and input schemas
+  app.get("/openapi.json", (c: any) => {
+    const origin = new URL(c.req.url).origin;
+    const paths: Record<string, any> = {};
+    for (const route of config.routes) {
+      const method = route.method.toLowerCase();
+      const requestBody = method === "post" ? {
+        required: true,
+        content: {
+          "application/json": {
+            schema: route.inputSchema,
+          },
+        },
+      } : undefined;
+      const parameters = method === "get" ? Object.entries(
+        (route.inputSchema as any)?.properties || {}
+      ).map(([name, prop]: [string, any]) => ({
+        name,
+        in: "query",
+        required: ((route.inputSchema as any)?.required || []).includes(name),
+        schema: { type: prop.type, description: prop.description },
+      })) : undefined;
+      paths[route.path] = {
+        [method]: {
+          summary: route.description,
+          description: route.toolDescription,
+          operationId: route.toolName,
+          ...(requestBody ? { requestBody } : {}),
+          ...(parameters && parameters.length > 0 ? { parameters } : {}),
+          "x-payment-info": {
+            price: {
+              fixed: {
+                mode: "fixed",
+                currency: "USD",
+                amount: route.price,
+              },
+            },
+            protocols: [{ "x402": {} }],
+          },
+          responses: {
+            "200": {
+              description: "Successful response",
+              content: { "application/json": { schema: { type: "object" } } },
+            },
+            "402": { description: "Payment Required" },
+          },
+        },
+      };
+    }
+    return c.json({
+      openapi: "3.0.3",
+      info: {
+        title: config.name,
+        description: config.description,
+        version: config.version,
+        "x-guidance": `${config.description}. Pay-per-call via x402 protocol (USDC on Base).`,
+      },
+      servers: [{ url: origin }],
+      paths,
+    });
+  });
+
+  console.log(`[discovery] /.well-known/x402 + /openapi.json ready — ${config.routes.length} resources`);
+}
+
 export function setupMcp(app: any, config: ApiConfig) {
+  // Register discovery endpoints (/.well-known/x402 + /openapi.json) for x402scan
+  setupDiscovery(app, config);
+
   const tools = buildMcpTools(config.routes);
   const sessions = new Map<string, { controller: ReadableStreamDefaultController; createdAt: number }>();
 
