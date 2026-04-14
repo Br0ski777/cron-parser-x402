@@ -46,6 +46,15 @@ export function buildPaymentConfig(routes: RouteConfig[], payTo = WALLET_ADDRESS
       },
     };
   }
+  // Mirror POST routes as GET for indexer probes (402index.io)
+  for (const route of routes) {
+    if (route.method === "POST") {
+      const getKey = `GET ${route.path}`;
+      if (!config[getKey]) {
+        config[getKey] = config[`POST ${route.path}`];
+      }
+    }
+  }
   return config;
 }
 
