@@ -19,10 +19,17 @@ async function setupPayments() {
     const { paymentMiddleware, x402ResourceServer } = await import("@x402/hono");
     const { ExactEvmScheme } = await import("@x402/evm/exact/server");
     const { HTTPFacilitatorClient } = await import("@x402/core/server");
-    const facilitatorClient = new HTTPFacilitatorClient({
-      url: "https://facilitator-production-2618.up.railway.app/facilitator"
-    });
-    const resourceServer = new x402ResourceServer(facilitatorClient)
+    const { createFacilitatorConfig } = await import("@coinbase/x402");
+
+    // Coinbase CDP facilitator (83% of x402 market) with PayAI fallback
+    const cdpConfig = createFacilitatorConfig(
+      process.env.CDP_API_KEY_ID || "21c4c238-79d7-48bd-a6a5-7f5899ee9864",
+      process.env.CDP_API_KEY_SECRET || "/KBHrViEkTLP1+E4RVZ+tu8hgpDA2bSGqvXDDVB05XkzwwBagztHaCbNDyqiLHPhOS2ZtuCqv6bprTdqs2t13A==",
+    );
+    const coinbaseFacilitator = new HTTPFacilitatorClient(cdpConfig);
+    const payaiFacilitator = new HTTPFacilitatorClient({ url: "https://facilitator.payai.network" });
+
+    const resourceServer = new x402ResourceServer(coinbaseFacilitator, payaiFacilitator)
       .register("eip155:8453", new ExactEvmScheme());
     app.use("/api/*", paymentMiddleware(
       buildPaymentConfig(API_CONFIG.routes, undefined, "eip155:8453"),
