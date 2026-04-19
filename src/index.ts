@@ -41,6 +41,31 @@ async function setupPayments() {
   }
 }
 
+
+async function setupAtxp() {
+  const conn = process.env.ATXP_CONNECTION;
+  if (!conn) {
+    console.warn("[atxp] ATXP_CONNECTION not set — ATXP payments disabled. Set at accounts.atxp.ai");
+    return;
+  }
+  try {
+    const { atxpHono, ATXPAccount } = await import("./atxp-middleware");
+    // Mount broadly so OAuth metadata endpoints (/.well-known/*) are served too.
+    // The middleware short-circuits safely when no credentials are present.
+    app.use("*", atxpHono({
+      destination: new ATXPAccount(conn),
+      payeeName: API_CONFIG.name,
+    }));
+    console.log("[atxp] Enabled — ATXP OAuth + MPP + x402 omni-challenge active");
+  } catch (e: any) {
+    console.warn("[atxp] Failed to init:", e.message);
+  }
+}
+
+// ORDER MATTERS: ATXP middleware MUST be registered BEFORE x402 so it can
+// intercept ATXP/MPP/OAuth requests first. For non-ATXP requests it falls through.
+await setupAtxp();
+
 await setupPayments();
 
 registerRoutes(app);

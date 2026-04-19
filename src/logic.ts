@@ -1,5 +1,20 @@
 import type { Hono } from "hono";
 
+
+// ATXP: requirePayment only fires inside an ATXP context (set by atxpHono middleware).
+// For raw x402 requests, the existing @x402/hono middleware handles the gate.
+// If neither protocol is active (ATXP_CONNECTION unset), tryRequirePayment is a no-op.
+async function tryRequirePayment(price: number): Promise<void> {
+  if (!process.env.ATXP_CONNECTION) return;
+  try {
+    const { requirePayment } = await import("@atxp/server");
+    const BigNumber = (await import("bignumber.js")).default;
+    await requirePayment({ price: BigNumber(price) });
+  } catch (e: any) {
+    if (e?.code === -30402) throw e;
+  }
+}
+
 const FIELD_NAMES = ["minute", "hour", "dayOfMonth", "month", "dayOfWeek"];
 const FIELD_RANGES: [number, number][] = [[0, 59], [0, 23], [1, 31], [1, 12], [0, 6]];
 const MONTH_NAMES = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -105,6 +120,7 @@ function validateCron(expression: string): { valid: boolean; error?: string; fie
 
 export function registerRoutes(app: Hono) {
   app.post("/api/parse", async (c) => {
+    await tryRequirePayment(0.001);
     const body = await c.req.json().catch(() => null);
     if (!body?.expression) {
       return c.json({ error: "Missing required field: expression" }, 400);

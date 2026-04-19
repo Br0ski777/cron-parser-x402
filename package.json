@@ -8,11 +8,14 @@
     "start": "bun run src/index.ts"
   },
   "dependencies": {
+    "@atxp/common": "^0.11.8",
+    "@atxp/server": "^0.11.8",
     "@coinbase/x402": "^2.1.0",
     "@x402/core": "^2.9.0",
     "@x402/evm": "^2.9.0",
     "@x402/extensions": "^2.9.0",
     "@x402/hono": "^2.9.0",
+    "bignumber.js": "^9.1.2",
     "hono": "^4.7.0"
   },
   "devDependencies": {
