@@ -21,7 +21,7 @@ async function setupPayments() {
     const { ExactEvmScheme } = await import("@x402/evm/exact/server");
     const { HTTPFacilitatorClient } = await import("@x402/core/server");
     const facilitatorClient = new HTTPFacilitatorClient({
-      url: "https://facilitator-production-2618.up.railway.app/facilitator"
+      url: "https://facilitator.payai.network"
     });
     const resourceServer = new x402ResourceServer(facilitatorClient)
       .register("eip155:8453", new ExactEvmScheme());
