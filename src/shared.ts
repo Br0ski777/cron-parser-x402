@@ -387,6 +387,22 @@ export function setupMcp(app: any, config: ApiConfig) {
             });
           }
           if (resp.status === 402) {
+            // Streamable HTTP (/mcp): forward the real 402 challenge so x402-aware
+            // clients (x402-proxy, aggregator gateway) can pay-and-retry transparently.
+            // Legacy SSE (/message): keep the text-error fallback, unpaid SSE clients
+            // have no HTTP-status-driven pay flow to hook into.
+            if (c.req.path === "/mcp") {
+              const bodyText = await resp.text();
+              const paymentRequired = resp.headers.get("payment-required");
+              return new Response(bodyText, {
+                status: 402,
+                headers: {
+                  "Content-Type": "application/json",
+                  "Access-Control-Allow-Origin": "*",
+                  ...(paymentRequired ? { "Payment-Required": paymentRequired } : {}),
+                },
+              });
+            }
             result = { content: [{ type: "text", text: "Payment required (x402). This tool requires USDC payment on Base." }], isError: true };
           } else {
             const data = await resp.text();
