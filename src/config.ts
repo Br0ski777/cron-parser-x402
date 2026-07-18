@@ -9,7 +9,7 @@ export const API_CONFIG: ApiConfig = {
     {
       method: "POST",
       path: "/api/parse",
-      price: "$0.001",
+      price: "$0.003",
       description: "Parse a cron expression and get next run times",
       toolName: "schedule_parse_cron",
       toolDescription: "Use this when you need to parse, validate, or explain a cron expression. Returns human-readable description, next N execution times, and field breakdown. Supports standard 5-field cron and extended 6-field (with seconds). Do NOT use for scheduling tasks — use api_test_webhook instead. Do NOT use for JSON validation — use data_validate_json instead.",
