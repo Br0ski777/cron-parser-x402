@@ -37,7 +37,7 @@ Any x402-aware client ([`@x402/fetch`](https://www.npmjs.com/package/@x402/fetch
 
 | Tool | Method | Path | Price | Description |
 |---|---|---|---|---|
-| `schedule_parse_cron` | POST | `/api/parse` | $0.001 | Parse a cron expression and get next run times |
+| `schedule_parse_cron` | POST | `/api/parse` | $0.003 | Parse a cron expression and get next run times |
 
 ### `schedule_parse_cron`
 
