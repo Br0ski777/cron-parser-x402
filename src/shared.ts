@@ -370,10 +370,14 @@ export function setupMcp(app: any, config: ApiConfig) {
         const authHeader = c.req.header("authorization") || "";
         const xpayKey = process.env.XPAY_PROXY_KEY;
         const isProxyAuthed = xpayKey && authHeader === `Bearer ${xpayKey}`;
+        const paySig = c.req.header("payment-signature");
+        const xPay = c.req.header("x-payment");
 
         try {
           const headers: Record<string, string> = { "Content-Type": "application/json" };
           if (isProxyAuthed) headers["Authorization"] = authHeader;
+          if (paySig) headers["PAYMENT-SIGNATURE"] = paySig;
+          if (xPay) headers["X-PAYMENT"] = xPay;
 
           let resp: Response;
           if (route.method === "GET") {
