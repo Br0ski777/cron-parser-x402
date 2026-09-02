@@ -40,5 +40,5 @@ await setupPayments();
 
 registerRoutes(app);
 
-Bun.serve({ fetch: app.fetch, port: parseInt(process.env.PORT || "3000", 10) });
+Bun.serve({ fetch: app.fetch, port: parseInt(process.env.PORT || "3000", 10), idleTimeout: 120 });
 console.log("[server] Listening on port " + (process.env.PORT || "3000"));
